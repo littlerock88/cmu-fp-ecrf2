@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CMU Facial Palsy Registry</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+:root {
+  --teal:#0F6E56;--teal-light:#E1F5EE;--teal-mid:#1D9E75;--teal-dark:#085041;
+  --amber:#BA7517;--amber-light:#FAEEDA;
+  --coral:#D85A30;--coral-light:#FAECE7;
+  --blue:#185FA5;--blue-light:#E6F1FB;
+  --purple:#534AB7;--purple-light:#EEEDFE;
+  --red:#A32D2D;--red-light:#FCEBEB;
+  --gray-50:#F7F6F3;--gray-100:#EEEDE8;--gray-200:#D3D1C7;
+  --gray-400:#888780;--gray-600:#5F5E5A;--gray-800:#2C2C2A;
+  --white:#FFFFFF;
+  --shadow:0 1px 3px rgba(0,0,0,0.08),0 1px 2px rgba(0,0,0,0.06);
+  --shadow-md:0 4px 6px rgba(0,0,0,0.07),0 2px 4px rgba(0,0,0,0.05);
+  --radius:10px;--radius-sm:6px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'IBM Plex Sans Thai',sans-serif;background:var(--gray-50);color:var(--gray-800);font-size:14px;line-height:1.6;min-height:100vh;}
+
+/* ── AUTH SCREENS ── */
+.auth-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--gray-50);}
+.auth-card{background:white;border:1px solid var(--gray-100);border-radius:var(--radius);padding:36px 32px;width:100%;max-width:420px;box-shadow:var(--shadow-md);}
+.auth-logo{display:flex;align-items:center;gap:10px;margin-bottom:24px;}
+.auth-logo-icon{width:38px;height:38px;border-radius:9px;background:var(--teal);display:flex;align-items:center;justify-content:center;}
+.auth-logo-icon i{color:white;font-size:18px;}
+.auth-logo-title{font-size:15px;font-weight:600;color:var(--teal-dark);}
+.auth-logo-sub{font-size:11px;color:var(--gray-400);}
+.auth-card h2{font-size:18px;font-weight:600;margin-bottom:6px;}
+.auth-card p.sub{font-size:13px;color:var(--gray-400);margin-bottom:22px;}
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;}
+.field label{font-size:12px;font-weight:500;color:var(--gray-600);}
+.field input,.field select,.field textarea{padding:9px 12px;border:1px solid var(--gray-200);border-radius:var(--radius-sm);font-family:inherit;font-size:13px;color:var(--gray-800);outline:none;transition:border-color 0.12s;width:100%;}
+.field input:focus,.field select:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(29,158,117,0.1);}
+.field input[readonly]{background:var(--gray-50);color:var(--gray-400);}
+.btn-full{width:100%;padding:10px;border:none;border-radius:var(--radius-sm);font-family:inherit;font-size:14px;font-weight:500;cursor:pointer;transition:background 0.15s;}
+.btn-teal{background:var(--teal);color:white;}
+.btn-teal:hover{background:var(--teal-dark);}
+.btn-teal:disabled{background:var(--gray-200);color:var(--gray-400);cursor:not-allowed;}
+.auth-link{text-align:center;margin-top:16px;font-size:13px;color:var(--gray-400);}
+.auth-link a{color:var(--teal);text-decoration:none;font-weight:500;}
+.auth-link a:hover{text-decoration:underline;}
+.err-msg{background:var(--red-light);color:var(--red);padding:9px 12px;border-radius:var(--radius-sm);font-size:12px;margin-bottom:14px;display:none;}
+.err-msg.show{display:block;}
+.ok-msg{background:var(--teal-light);color:var(--teal-dark);padding:9px 12px;border-radius:var(--radius-sm);font-size:12px;margin-bottom:14px;display:none;}
+.ok-msg.show{display:block;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+/* ── PENDING SCREEN ── */
+.pending-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;}
+.pending-card{background:white;border:1px solid var(--gray-100);border-radius:var(--radius);padding:40px 36px;text-align:center;max-width:380px;box-shadow:var(--shadow-md);}
+.pending-icon{width:60px;height:60px;border-radius:50%;background:var(--amber-light);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;}
+.pending-icon i{font-size:26px;color:var(--amber);}
+.pending-card h2{font-size:17px;font-weight:600;margin-bottom:8px;}
+.pending-card p{font-size:13px;color:var(--gray-400);line-height:1.6;}
+.btn-logout-sm{margin-top:20px;padding:8px 18px;border:1px solid var(--gray-200);border-radius:var(--radius-sm);background:none;font-family:inherit;font-size:13px;color:var(--gray-600);cursor:pointer;}
+.btn-logout-sm:hover{background:var(--gray-50);}
+
+/* ── APP LAYOUT ── */
+.app-shell{display:flex;height:100vh;overflow:hidden;}
+.sidebar{width:260px;min-width:260px;background:white;border-right:1px solid var(--gray-100);display:flex;flex-direction:column;overflow:hidden;}
+.sidebar-header{padding:16px 16px 12px;border-bottom:1px solid var(--gray-100);}
+.logo{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;color:var(--teal-dark);}
+.logo-icon{width:32px;height:32px;border-radius:7px;background:var(--teal);display:flex;align-items:center;justify-content:center;}
+.logo-icon i{color:white;font-size:14px;}
+.logo-sub{font-size:11px;font-weight:400;color:var(--gray-400);}
+.user-bar{margin:10px 0 0;padding:8px 10px;background:var(--gray-50);border-radius:var(--radius-sm);display:flex;align-items:center;gap:8px;}
+.user-avatar{width:26px;height:26px;border-radius:50%;background:var(--teal-light);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:var(--teal-dark);flex-shrink:0;}
+.user-name{font-size:11px;font-weight:500;color:var(--gray-800);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.user-role{font-size:10px;color:var(--gray-400);}
+.btn-icon{border:none;background:none;cursor:pointer;color:var(--gray-400);font-size:13px;padding:3px;}
+.btn-icon:hover{color:var(--red);}
+.search-box{margin:10px 16px 0;display:flex;align-items:center;gap:8px;background:var(--gray-50);border:1px solid var(--gray-200);border-radius:var(--radius-sm);padding:7px 10px;}
+.search-box input{border:none;background:transparent;font-family:inherit;font-size:13px;color:var(--gray-800);width:100%;outline:none;}
+.search-box input::placeholder{color:var(--gray-400);}
+.patient-list{flex:1;overflow-y:auto;padding:6px 0;}
+.patient-list::-webkit-scrollbar{width:4px;}
+.patient-list::-webkit-scrollbar-thumb{background:var(--gray-200);border-radius:2px;}
+.patient-item{padding:9px 16px;cursor:pointer;border-left:3px solid transparent;transition:background 0.1s;}
+.patient-item:hover{background:var(--gray-50);}
+.patient-item.active{background:var(--teal-light);border-left-color:var(--teal);}
+.patient-hn{font-size:11px;font-weight:600;color:var(--teal);font-family:'IBM Plex Mono',monospace;}
+.patient-item.active .patient-hn{color:var(--teal-dark);}
+.patient-name{font-size:13px;color:var(--gray-800);margin-top:1px;}
+.patient-meta{font-size:11px;color:var(--gray-400);margin-top:1px;}
+.sidebar-footer{padding:10px 16px;border-top:1px solid var(--gray-100);display:flex;flex-direction:column;gap:6px;}
+.btn-new{width:100%;padding:8px 12px;background:var(--teal);color:white;border:none;border-radius:var(--radius-sm);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:background 0.15s;}
+.btn-new:hover{background:var(--teal-dark);}
+.btn-admin{width:100%;padding:7px 12px;background:none;color:var(--gray-600);border:1px solid var(--gray-200);border-radius:var(--radius-sm);font-family:inherit;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all 0.12s;}
+.btn-admin:hover{background:var(--gray-50);border-color:var(--gray-400);}
+
+/* ── MAIN ── */
+.main{flex:1;overflow-y:auto;display:flex;flex-direction:column;}
+.topbar{background:white;border-bottom:1px solid var(--gray-100);padding:0 24px;display:flex;align-items:center;min-height:52px;gap:12px;position:sticky;top:0;z-index:10;}
+.topbar-title{font-size:14px;font-weight:600;}
+.topbar-sub{font-size:12px;color:var(--gray-400);}
+.topbar-actions{margin-left:auto;display:flex;gap:8px;}
+.btn{padding:6px 13px;border-radius:var(--radius-sm);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--gray-200);background:white;color:var(--gray-800);display:inline-flex;align-items:center;gap:6px;transition:all 0.12s;}
+.btn:hover{background:var(--gray-50);border-color:var(--gray-400);}
+.btn-primary{background:var(--teal);color:white;border-color:var(--teal);}
+.btn-primary:hover{background:var(--teal-dark);border-color:var(--teal-dark);}
+.content{padding:20px 24px;flex:1;}
+.content.welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;text-align:center;}
+.welcome-icon{width:60px;height:60px;border-radius:14px;background:var(--teal-light);display:flex;align-items:center;justify-content:center;margin-bottom:16px;}
+.welcome-icon i{font-size:26px;color:var(--teal);}
+.welcome h2{font-size:19px;font-weight:600;margin-bottom:8px;}
+.welcome p{color:var(--gray-400);font-size:13px;max-width:300px;}
+.stats{display:flex;gap:16px;margin-top:24px;}
+.stat-card{background:white;border:1px solid var(--gray-100);border-radius:var(--radius);padding:14px 18px;text-align:center;min-width:110px;}
+.stat-num{font-size:26px;font-weight:600;color:var(--teal);font-family:'IBM Plex Mono',monospace;}
+.stat-label{font-size:11px;color:var(--gray-400);margin-top:2px;}
+
+/* ── FORM TABS ── */
+.form-tabs{display:flex;border-bottom:2px solid var(--gray-100);margin-bottom:20px;overflow-x:auto;}
+.form-tab{padding:9px 14px;font-size:12px;font-weight:500;color:var(--gray-400);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;white-space:nowrap;background:none;border-top:none;border-left:none;border-right:none;font-family:inherit;transition:color 0.12s;}
+.form-tab:hover{color:var(--gray-800);}
+.form-tab.active{color:var(--teal);border-bottom-color:var(--teal);}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+
+/* ── SECTIONS ── */
+.section{background:white;border:1px solid var(--gray-100);border-radius:var(--radius);padding:18px 22px;margin-bottom:14px;}
+.section-header{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--gray-100);}
+.section-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;}
+.section-title{font-size:13px;font-weight:600;}
+.section-sub{font-size:11px;color:var(--gray-400);}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+.grid-4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;}
+.col-span-2{grid-column:span 2;}
+.col-span-3{grid-column:span 3;}
+.col-span-4{grid-column:span 4;}
+.hb-grid{display:grid;grid-template-columns:auto repeat(2,1fr);gap:7px;align-items:center;font-size:12px;}
+.hb-label{font-size:12px;color:var(--gray-600);font-weight:500;}
+.hb-head{text-align:center;font-size:11px;font-weight:600;color:var(--gray-400);padding-bottom:4px;border-bottom:1px solid var(--gray-100);}
+.hb-grid select{padding:5px 7px;border:1px solid var(--gray-200);border-radius:var(--radius-sm);font-family:inherit;font-size:12px;color:var(--gray-800);width:100%;outline:none;}
+.hb-grid select:focus{border-color:var(--teal);}
+
+/* ── REPEATED ── */
+.repeated-block{border:1px solid var(--gray-100);border-radius:var(--radius);margin-bottom:10px;overflow:hidden;}
+.repeated-header{background:var(--gray-50);padding:9px 14px;display:flex;align-items:center;border-bottom:1px solid var(--gray-100);cursor:pointer;user-select:none;}
+.entry-num{font-size:11px;font-weight:600;color:var(--teal);background:var(--teal-light);padding:2px 7px;border-radius:20px;margin-right:9px;font-family:'IBM Plex Mono',monospace;}
+.entry-title{font-size:12px;font-weight:500;color:var(--gray-800);flex:1;}
+.chevron{color:var(--gray-400);font-size:11px;transition:transform 0.2s;}
+.repeated-header.open .chevron{transform:rotate(180deg);}
+.repeated-body{padding:14px;}
+.repeated-body.collapsed{display:none;}
+.add-entry-btn{width:100%;padding:8px;border:1.5px dashed var(--gray-200);border-radius:var(--radius-sm);background:none;font-family:inherit;font-size:13px;color:var(--teal);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all 0.12s;}
+.add-entry-btn:hover{border-color:var(--teal);background:var(--teal-light);}
+.remove-btn{padding:4px 9px;border:1px solid var(--red-light);border-radius:var(--radius-sm);background:none;color:var(--red);font-family:inherit;font-size:12px;cursor:pointer;}
+.remove-btn:hover{background:var(--red-light);}
+
+/* ── VIEW MODE ── */
+.info-row{display:flex;gap:8px 20px;flex-wrap:wrap;padding:10px 0;border-bottom:1px solid var(--gray-100);}
+.info-row:last-child{border-bottom:none;}
+.info-item{min-width:150px;}
+.info-key{font-size:11px;color:var(--gray-400);font-weight:500;text-transform:uppercase;letter-spacing:0.04em;}
+.info-val{font-size:13px;color:var(--gray-800);margin-top:1px;font-weight:500;}
+.badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:20px;font-size:11px;font-weight:500;}
+.badge-teal{background:var(--teal-light);color:var(--teal-dark);}
+.badge-amber{background:var(--amber-light);color:var(--amber);}
+.badge-coral{background:var(--coral-light);color:var(--coral);}
+.badge-blue{background:var(--blue-light);color:var(--blue);}
+.badge-red{background:var(--red-light);color:var(--red);}
+.badge-purple{background:var(--purple-light);color:var(--purple);}
+.timeline{padding:2px 0;}
+.tl-entry{display:flex;gap:12px;margin-bottom:14px;position:relative;}
+.tl-dot{width:9px;height:9px;border-radius:50%;background:var(--teal);margin-top:4px;flex-shrink:0;z-index:1;}
+.tl-entry::before{content:'';position:absolute;left:4px;top:13px;bottom:-14px;width:1px;background:var(--gray-100);}
+.tl-entry:last-child::before{display:none;}
+.tl-date{font-size:11px;color:var(--gray-400);font-family:'IBM Plex Mono',monospace;min-width:88px;}
+.tl-title{font-size:13px;font-weight:500;}
+.tl-detail{font-size:12px;color:var(--gray-400);margin-top:1px;}
+
+/* ── ADMIN PANEL ── */
+.users-table{width:100%;border-collapse:collapse;font-size:13px;}
+.users-table th{padding:9px 12px;text-align:left;font-weight:500;color:var(--gray-600);border-bottom:1px solid var(--gray-100);background:var(--gray-50);}
+.users-table td{padding:10px 12px;border-bottom:1px solid var(--gray-100);vertical-align:middle;}
+.users-table tr:last-child td{border-bottom:none;}
+.role-select{padding:4px 8px;border:1px solid var(--gray-200);border-radius:var(--radius-sm);font-family:inherit;font-size:12px;background:white;outline:none;cursor:pointer;}
+.btn-approve{padding:4px 10px;background:var(--teal);color:white;border:none;border-radius:var(--radius-sm);font-family:inherit;font-size:12px;cursor:pointer;}
+.btn-approve:hover{background:var(--teal-dark);}
+.btn-revoke{padding:4px 10px;background:none;color:var(--red);border:1px solid var(--red-light);border-radius:var(--radius-sm);font-family:inherit;font-size:12px;cursor:pointer;}
+.btn-revoke:hover{background:var(--red-light);}
+
+/* ── TOAST / LOADING ── */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--teal-dark);color:white;padding:10px 16px;border-radius:var(--radius);font-size:13px;display:flex;align-items:center;gap:8px;opacity:0;transform:translateY(8px);transition:all 0.25s;pointer-events:none;z-index:999;}
+.toast.show{opacity:1;transform:translateY(0);}
+.loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,0.9);display:flex;align-items:center;justify-content:center;z-index:9999;font-size:13px;color:var(--gray-600);}
+.spinner{width:22px;height:22px;border:2px solid var(--gray-200);border-top-color:var(--teal);border-radius:50%;animation:spin 0.7s linear infinite;margin-right:10px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div> กำลังโหลด...
+</div>
+
+<!-- LOGIN -->
+<div class="auth-screen" id="loginScreen" style="display:none;">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="auth-logo-icon"><i class="fas fa-hospital-user"></i></div>
+      <div><div class="auth-logo-title">CMU-FP Registry</div><div class="auth-logo-sub">Facial Palsy eCRF</div></div>
+    </div>
+    <h2>เข้าสู่ระบบ</h2>
+    <p class="sub">กรุณาใช้บัญชีที่ได้รับอนุมัติแล้ว</p>
+    <div class="err-msg" id="loginErr"></div>
+    <div class="field"><label>Email</label><input type="email" id="loginEmail" placeholder="email@example.com"></div>
+    <div class="field"><label>Password</label><input type="password" id="loginPass" placeholder="••••••••"></div>
+    <button class="btn-full btn-teal" onclick="doLogin()" id="loginBtn">เข้าสู่ระบบ</button>
+    <div class="auth-link">ยังไม่มีบัญชี? <a href="#" onclick="showScreen('register')">สมัครใช้งาน</a></div>
+  </div>
+</div>
+
+<!-- REGISTER -->
+<div class="auth-screen" id="registerScreen" style="display:none;">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="auth-logo-icon"><i class="fas fa-hospital-user"></i></div>
+      <div><div class="auth-logo-title">CMU-FP Registry</div><div class="auth-logo-sub">Facial Palsy eCRF</div></div>
+    </div>
+    <h2>สมัครใช้งาน</h2>
+    <p class="sub">บัญชีจะถูกเปิดใช้หลังจาก Admin อนุมัติ</p>
+    <div class="err-msg" id="regErr"></div>
+    <div class="ok-msg" id="regOk"></div>
+    <div class="grid-2">
+      <div class="field"><label>ชื่อ <span style="color:var(--coral)">*</span></label><input id="regFirst" placeholder="ชื่อ"></div>
+      <div class="field"><label>นามสกุล <span style="color:var(--coral)">*</span></label><input id="regLast" placeholder="นามสกุล"></div>
+    </div>
+    <div class="field"><label>Email <span style="color:var(--coral)">*</span></label><input type="email" id="regEmail" placeholder="email@example.com"></div>
+    <div class="field"><label>Password <span style="color:var(--coral)">*</span></label><input type="password" id="regPass" placeholder="อย่างน้อย 6 ตัวอักษร"></div>
+    <div class="field"><label>ยืนยัน Password</label><input type="password" id="regPass2" placeholder="••••••••"></div>
+    <button class="btn-full btn-teal" onclick="doRegister()" id="regBtn">สมัครใช้งาน</button>
+    <div class="auth-link">มีบัญชีแล้ว? <a href="#" onclick="showScreen('login')">เข้าสู่ระบบ</a></div>
+  </div>
+</div>
+
+<!-- PENDING APPROVAL -->
+<div class="pending-screen" id="pendingScreen" style="display:none;">
+  <div class="pending-card">
+    <div class="pending-icon"><i class="fas fa-clock"></i></div>
+    <h2>รอการอนุมัติ</h2>
+    <p id="pendingName"></p>
+    <p style="margin-top:8px;">บัญชีของคุณกำลังรอ Admin อนุมัติ<br>กรุณารอการติดต่อกลับ</p>
+    <button class="btn-logout-sm" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i> ออกจากระบบ</button>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div class="app-shell" id="appShell" style="display:none;">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <div class="logo-icon"><i class="fas fa-hospital-user"></i></div>
+        <div><div>CMU-FP Registry</div><div class="logo-sub">Facial Palsy Database</div></div>
+      </div>
+      <div class="user-bar">
+        <div class="user-avatar" id="userAvatar">??</div>
+        <div style="flex:1;min-width:0;">
+          <div class="user-name" id="userName">—</div>
+          <div class="user-role" id="userRoleBadge">—</div>
+        </div>
+        <button class="btn-icon" onclick="doLogout()" title="ออกจากระบบ"><i class="fas fa-sign-out-alt"></i></button>
+      </div>
+      <div class="search-box" style="margin-top:10px;">
+        <i class="fas fa-search" style="color:var(--gray-400);font-size:12px;"></i>
+        <input type="text" id="searchInput" placeholder="ค้นหา HN / ชื่อ..." oninput="filterPatients()">
+      </div>
+    </div>
+    <div class="patient-list" id="patientList"></div>
+    <div class="sidebar-footer">
+      <button class="btn-new" id="btnNewPatient" onclick="newPatient()"><i class="fas fa-plus"></i> เพิ่มผู้ป่วยใหม่</button>
+      <div style="display:flex;gap:6px;">
+        <button class="btn-admin" style="flex:1;" onclick="exportCSV()"><i class="fas fa-file-csv"></i> Export CSV</button>
+        <button class="btn-admin" style="flex:1;" onclick="exportExcel()"><i class="fas fa-file-excel"></i> Export Excel</button>
+      </div>
+      <button class="btn-admin" id="btnAdminPanel" onclick="showAdminPanel()" style="display:none;"><i class="fas fa-users-cog"></i> Admin Panel</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div id="welcomeScreen" class="content welcome">
+      <div class="welcome-icon"><i class="fas fa-hospital-user"></i></div>
+      <h2>CMU Facial Palsy Registry</h2>
+      <p>เลือกผู้ป่วยจากรายการ หรือกดเพิ่มผู้ป่วยใหม่</p>
+      <div class="stats">
+        <div class="stat-card"><div class="stat-num" id="totalCount">—</div><div class="stat-label">ผู้ป่วยทั้งหมด</div></div>
+        <div class="stat-card"><div class="stat-num" id="thisMonthCount">—</div><div class="stat-label">เดือนนี้</div></div>
+      </div>
+    </div>
+
+    <div id="patientView" style="display:none;flex:1;flex-direction:column;">
+      <div class="topbar">
+        <div>
+          <div class="topbar-title" id="topbarTitle">—</div>
+          <div class="topbar-sub" id="topbarSub">—</div>
+        </div>
+        <div class="topbar-actions">
+          <button class="btn" id="editBtn" onclick="toggleEdit()"><i class="fas fa-pen"></i> แก้ไข</button>
+          <button class="btn btn-primary" id="saveBtn" onclick="savePatient()" style="display:none;"><i class="fas fa-save"></i> บันทึก</button>
+          <button class="btn" id="cancelBtn" onclick="cancelEdit()" style="display:none;"><i class="fas fa-times"></i> ยกเลิก</button>
+        </div>
+      </div>
+      <div class="content" id="mainContent" style="padding-top:18px;"></div>
+    </div>
+
+    <div id="adminPanelView" style="display:none;">
+      <div class="topbar">
+        <div class="topbar-title"><i class="fas fa-users-cog" style="color:var(--teal);margin-right:8px;"></i>Admin Panel</div>
+        <div class="topbar-actions"><button class="btn" onclick="hideAdminPanel()"><i class="fas fa-arrow-left"></i> กลับ</button></div>
+      </div>
+      <div class="content">
+        <div class="section">
+          <div class="section-header">
+            <div class="section-icon" style="background:var(--amber-light);"><i class="fas fa-clock" style="color:var(--amber);"></i></div>
+            <div><div class="section-title">รอการอนุมัติ</div></div>
+            <span id="pendingCount" class="badge badge-amber" style="margin-left:auto;"></span>
+          </div>
+          <div id="pendingList"><div style="color:var(--gray-400);font-size:13px;">ไม่มีรายการรอ</div></div>
+        </div>
+        <div class="section" style="margin-top:16px;">
+          <div class="section-header">
+            <div class="section-icon" style="background:var(--teal-light);"><i class="fas fa-users" style="color:var(--teal);"></i></div>
+            <div><div class="section-title">ผู้ใช้งานทั้งหมด</div></div>
+          </div>
+          <div id="allUsersList"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast"><i class="fas fa-check-circle"></i> <span id="toastMsg">บันทึกเรียบร้อย</span></div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc,
+  collection, query, orderBy, getDocs, onSnapshot, serverTimestamp }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBV0wGPn2lDjadbXTjo2zlFa5Y58ekAjF4",
+  authDomain: "cmu-fp-ecrf-v2.firebaseapp.com",
+  projectId: "cmu-fp-ecrf-v2",
+  storageBucket: "cmu-fp-ecrf-v2.firebasestorage.app",
+  messagingSenderId: "910207353635",
+  appId: "1:910207353635:web:5f025da9ad3a18a9958296",
+  measurementId: "G-WFYBD7XWHX"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+/* ── STATE ── */
+let currentUser = null;
+let currentUserData = null;
+let currentPatient = null;
+let isEditing = false;
+let allPatients = [];
+let tempInv = [];
+let tempTx = [];
+let patientsUnsub = null;
+
+/* ── HELPERS ── */
+window.esc = s => (s||'').toString().replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+window.opts = (list,cur) => list.map(v=>`<option value="${v}"${v===cur?' selected':''}>${v||'— เลือก —'}</option>`).join('');
+window.calcAge = (dob,ref) => {
+  if(!dob) return '—';
+  const d=new Date(dob),r=ref?new Date(ref):new Date();
+  if(isNaN(d)||isNaN(r)) return '—';
+  let a=r.getFullYear()-d.getFullYear();
+  const m=r.getMonth()-d.getMonth();
+  if(m<0||(m===0&&r.getDate()<d.getDate())) a--;
+  return a<0?'—':a;
+};
+window.fullName = p=>((p.firstName||'')+' '+(p.lastName||'')).trim()||'—';
+window.hbColor = g=>({I:'teal',II:'blue',III:'amber',IV:'amber',V:'coral',VI:'red'}[g]||'teal');
+function initials(s){const w=s.trim().split(' ');return w.length>=2?(w[0][0]+w[w.length-1][0]).toUpperCase():s.slice(0,2).toUpperCase();}
+function showToast(msg){const t=document.getElementById('toast');document.getElementById('toastMsg').textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
+function hideLoading(){document.getElementById('loadingOverlay').style.display='none';}
+
+/* ── SCREENS ── */
+window.showScreen = name => {
+  const map={login:'loginScreen',register:'registerScreen',pending:'pendingScreen',app:'appShell'};
+  Object.values(map).forEach(id=>document.getElementById(id).style.display='none');
+  document.getElementById(map[name]).style.display='flex';
+};
+
+/* ── AUTH STATE ── */
+onAuthStateChanged(auth, async user => {
+  hideLoading();
+  if(!user){showScreen('login');return;}
+  currentUser=user;
+  const snap=await getDoc(doc(db,'users',user.uid));
+  if(!snap.exists()){await signOut(auth);showScreen('login');return;}
+  currentUserData=snap.data();
+  if(!currentUserData.approved){
+    document.getElementById('pendingName').textContent=`สวัสดี ${currentUserData.firstName} ${currentUserData.lastName}`;
+    showScreen('pending');return;
+  }
+  initApp();
+});
+
+/* ── LOGIN ── */
+window.doLogin = async () => {
+  const email=document.getElementById('loginEmail').value.trim();
+  const pass=document.getElementById('loginPass').value;
+  const err=document.getElementById('loginErr');
+  const btn=document.getElementById('loginBtn');
+  err.classList.remove('show');
+  if(!email||!pass){err.textContent='กรุณากรอก email และ password';err.classList.add('show');return;}
+  btn.disabled=true;btn.textContent='กำลังเข้าสู่ระบบ...';
+  try{await signInWithEmailAndPassword(auth,email,pass);}
+  catch(e){err.textContent=e.code==='auth/invalid-credential'?'Email หรือ Password ไม่ถูกต้อง':'เกิดข้อผิดพลาด: '+e.message;err.classList.add('show');}
+  btn.disabled=false;btn.textContent='เข้าสู่ระบบ';
+};
+
+/* ── REGISTER ── */
+window.doRegister = async () => {
+  const first=document.getElementById('regFirst').value.trim();
+  const last=document.getElementById('regLast').value.trim();
+  const email=document.getElementById('regEmail').value.trim();
+  const pass=document.getElementById('regPass').value;
+  const pass2=document.getElementById('regPass2').value;
+  const err=document.getElementById('regErr');
+  const ok=document.getElementById('regOk');
+  const btn=document.getElementById('regBtn');
+  err.classList.remove('show');ok.classList.remove('show');
+  if(!first||!last||!email||!pass){err.textContent='กรุณากรอกข้อมูลให้ครบ';err.classList.add('show');return;}
+  if(pass!==pass2){err.textContent='Password ไม่ตรงกัน';err.classList.add('show');return;}
+  if(pass.length<6){err.textContent='Password ต้องมีอย่างน้อย 6 ตัวอักษร';err.classList.add('show');return;}
+  btn.disabled=true;btn.textContent='กำลังสมัคร...';
+  try{
+    const cred=await createUserWithEmailAndPassword(auth,email,pass);
+    await setDoc(doc(db,'users',cred.user.uid),{uid:cred.user.uid,firstName:first,lastName:last,email,role:'clinician',approved:false,createdAt:serverTimestamp()});
+    await signOut(auth);
+    ok.textContent=`สมัครสำเร็จ! รอ Admin อนุมัติบัญชีของคุณ (${first} ${last})`;
+    ok.classList.add('show');
+    ['regFirst','regLast','regEmail','regPass','regPass2'].forEach(id=>document.getElementById(id).value='');
+  }catch(e){err.textContent=e.code==='auth/email-already-in-use'?'Email นี้มีในระบบแล้ว':'เกิดข้อผิดพลาด: '+e.message;err.classList.add('show');}
+  btn.disabled=false;btn.textContent='สมัครใช้งาน';
+};
+
+/* ── LOGOUT ── */
+window.doLogout = async () => {await signOut(auth);if(patientsUnsub)patientsUnsub();};
+
+/* ── INIT APP ── */
+function initApp(){
+  showScreen('app');
+  const d=currentUserData;
+  document.getElementById('userAvatar').textContent=initials(`${d.firstName} ${d.lastName}`);
+  document.getElementById('userName').textContent=`${d.firstName} ${d.lastName}`;
+  document.getElementById('userRoleBadge').textContent=d.role==='admin'?'Admin':d.role==='viewer'?'Viewer':'Clinician';
+  if(d.role==='admin') document.getElementById('btnAdminPanel').style.display='';
+  if(d.role==='viewer') document.getElementById('btnNewPatient').style.display='none';
+  subscribePatients();
+}
+
+/* ── PATIENTS REALTIME ── */
+function subscribePatients(){
+  const q=query(collection(db,'patients'),orderBy('visitDate','desc'));
+  patientsUnsub=onSnapshot(q,snap=>{
+    allPatients=snap.docs.map(d=>({id:d.id,...d.data()}));
+    renderSidebar();
+    updateStats();
+  });
+}
+
+/* ── SIDEBAR ── */
+window.filterPatients=()=>renderSidebar(document.getElementById('searchInput').value.trim());
+function renderSidebar(filter=''){
+  const pts=filter?allPatients.filter(p=>(p.hn||'').includes(filter)||fullName(p).toLowerCase().includes(filter.toLowerCase())||(p.etiology||'').toLowerCase().includes(filter.toLowerCase())):allPatients;
+  document.getElementById('patientList').innerHTML=pts.length===0
+    ?'<div style="padding:20px 16px;color:var(--gray-400);font-size:12px;text-align:center;">ไม่พบข้อมูล</div>'
+    :pts.map(p=>`<div class="patient-item ${currentPatient&&currentPatient.id===p.id?'active':''}" onclick="loadPatient('${p.id}')">
+      <div class="patient-hn">${esc(p.hn||p.id)}</div>
+      <div class="patient-name">${esc(fullName(p))}</div>
+      <div class="patient-meta">${esc(p.etiology||'—')} · ${esc(p.side||'—')}</div>
+    </div>`).join('');
+}
+function updateStats(){
+  document.getElementById('totalCount').textContent=allPatients.length;
+  const now=new Date();
+  document.getElementById('thisMonthCount').textContent=allPatients.filter(p=>{try{const d=new Date(p.visitDate);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();}catch{return false;}}).length;
+}
+
+/* ── LOAD PATIENT ── */
+window.loadPatient=id=>{
+  currentPatient=allPatients.find(p=>p.id===id);
+  isEditing=false;
+  document.getElementById('welcomeScreen').style.display='none';
+  document.getElementById('adminPanelView').style.display='none';
+  document.getElementById('patientView').style.display='flex';
+  document.getElementById('editBtn').style.display=currentUserData.role!=='viewer'?'':'none';
+  document.getElementById('saveBtn').style.display='none';
+  document.getElementById('cancelBtn').style.display='none';
+  renderViewMode(currentPatient);
+  renderSidebar(document.getElementById('searchInput').value.trim());
+};
+
+/* ── VIEW MODE ── */
+function renderViewMode(p){
+  document.getElementById('topbarTitle').textContent=`${fullName(p)} · HN ${p.hn||'—'}`;
+  document.getElementById('topbarSub').textContent=`${p.etiology||'—'} · ${p.side||'—'} · Visit: ${p.visitDate||'—'}`;
+  const hb=p.hb||{},sb=p.sb||{};
+  const inv=(p.investigations||[]).map(i=>`<div class="tl-entry"><div class="tl-dot"></div><div><div class="tl-date">${esc(i.date||'—')}</div><div class="tl-title">${esc(i.type||'—')}</div><div class="tl-detail">${esc(i.result||'—')}</div></div></div>`).join('');
+  const tx=(p.treatments||[]).map(t=>`<div class="tl-entry"><div class="tl-dot" style="background:var(--purple)"></div><div><div class="tl-date">${esc(t.date||'—')}</div><div class="tl-title">${esc(t.type||'—')}</div><div class="tl-detail">${esc(t.notes||'—')}</div></div></div>`).join('');
+  document.getElementById('mainContent').innerHTML=`
+  <div class="form-tabs">
+    <button class="form-tab active" onclick="switchTab('overview')">ภาพรวม</button>
+    <button class="form-tab" onclick="switchTab('grading')">Grading</button>
+    <button class="form-tab" onclick="switchTab('investigations')">Investigations (${(p.investigations||[]).length})</button>
+    <button class="form-tab" onclick="switchTab('treatment')">Treatment (${(p.treatments||[]).length})</button>
+  </div>
+  <div id="tab-overview" class="tab-panel active">
+    <div class="section"><div class="section-header"><div class="section-icon" style="background:var(--teal-light)"><i class="fas fa-user" style="color:var(--teal)"></i></div><div><div class="section-title">ข้อมูลผู้ป่วย</div></div></div>
+      <div class="info-row">
+        <div class="info-item"><div class="info-key">HN</div><div class="info-val" style="font-family:monospace">${esc(p.hn||'—')}</div></div>
+        <div class="info-item"><div class="info-key">ชื่อ</div><div class="info-val">${esc(p.firstName||'—')}</div></div>
+        <div class="info-item"><div class="info-key">นามสกุล</div><div class="info-val">${esc(p.lastName||'—')}</div></div>
+        <div class="info-item"><div class="info-key">Visit Date</div><div class="info-val">${esc(p.visitDate||'—')}</div></div>
+        <div class="info-item"><div class="info-key">วันเกิด</div><div class="info-val">${esc(p.dob||'—')}</div></div>
+        <div class="info-item"><div class="info-key">อายุ ณ วันที่ Visit</div><div class="info-val">${calcAge(p.dob,p.visitDate)} ปี</div></div>
+        <div class="info-item"><div class="info-key">Sex</div><div class="info-val">${esc(p.sex||'—')}</div></div>
+        <div class="info-item"><div class="info-key">Occupation</div><div class="info-val">${esc(p.occupation||'—')}</div></div>
+        <div class="info-item"><div class="info-key">Underlying</div><div class="info-val">${esc(p.underlying||'—')}</div></div>
+      </div>
+      <div class="info-row">
+        <div class="info-item"><div class="info-key">Smoking</div><div class="info-val">${esc(p.smoking||'—')}</div></div>
+        <div class="info-item"><div class="info-key">Prev Surgery</div><div class="info-val">${esc(p.prevSurgery||'—')}</div></div>
+        <div class="info-item"><div class="info-key">Prev Botox/Filler</div><div class="info-val">${esc(p.prevBotox||'—')}</div></div>
+        <div class="info-item"><div class="info-key">Prev FP Tx</div><div class="info-val">${esc(p.prevTx||'—')}</div></div>
+      </div>
+    </div>
+    <div class="section"><div class="section-header"><div class="section-icon" style="background:var(--amber-light)"><i class="fas fa-bolt" style="color:var(--amber)"></i></div><div><div class="section-title">Etiology & Onset</div></div></div>
+      <div class="info-row">
+        <div class="info-item"><div class="info-key">Level of Injury</div><div class="info-val"><span class="badge badge-amber">${esc(p.levelInjury||'—')}</span></div></div>
+        <div class="info-item"><div class="info-key">Etiology</div><div class="info-val"><span class="badge badge-coral">${esc(p.etiology||'—')}</span></div></div>
+        <div class="info-item"><div class="info-key">Date of Onset</div><div class="info-val">${esc(p.dateOnset||'—')}</div></div>
+        <div class="info-item"><div class="info-key">Duration</div><div class="info-val">${esc(p.duration||'—')}</div></div>
+        <div class="info-item"><div class="info-key">Mode of Onset</div><div class="info-val">${esc(p.modeOnset||'—')}</div></div>
+        <div class="info-item"><div class="info-key">Course</div><div class="info-val"><span class="badge badge-${p.course==='Improving'?'teal':'amber'}">${esc(p.course||'—')}</span></div></div>
+        <div class="info-item"><div class="info-key">Recurrent</div><div class="info-val">${esc(p.recurrent||'—')}</div></div>
+        <div class="info-item"><div class="info-key">Side</div><div class="info-val"><span class="badge badge-blue">${esc(p.side||'—')}</span></div></div>
+      </div>
+      <div class="info-row"><div class="info-item" style="flex:1"><div class="info-key">Symptoms</div><div class="info-val">${esc(p.symptoms||'—')}</div></div></div>
+    </div>
+    <div class="section"><div class="section-header"><div class="section-icon" style="background:var(--blue-light)"><i class="fas fa-eye" style="color:var(--blue)"></i></div><div><div class="section-title">Ophthalmology & Cranial Nerve</div></div></div>
+      <div class="info-row">
+        <div class="info-item"><div class="info-key">CN V</div><div class="info-val">${esc(p.cnV||'—')}</div></div>
+        <div class="info-item"><div class="info-key">CN XI</div><div class="info-val">${esc(p.cnXI||'—')}</div></div>
+        <div class="info-item"><div class="info-key">CN XII</div><div class="info-val">${esc(p.cnXII||'—')}</div></div>
+        <div class="info-item"><div class="info-key">Donor Nerve</div><div class="info-val">${esc(p.donorNerve||'—')}</div></div>
+        <div class="info-item"><div class="info-key">Ophtho Findings</div><div class="info-val">${esc(p.ophthoFindings||'—')}</div></div>
+        <div class="info-item"><div class="info-key">Lagophthalmos</div><div class="info-val">${p.lagophthalmos!==undefined&&p.lagophthalmos!==''?p.lagophthalmos+' mm':'—'}</div></div>
+        <div class="info-item"><div class="info-key">Bell's Phenomenon</div><div class="info-val">${esc(p.bellsPhenomenon||'—')}</div></div>
+        <div class="info-item"><div class="info-key">Visual Acuity</div><div class="info-val">${esc(p.va||'—')}</div></div>
+      </div>
+    </div>
+  </div>
+  <div id="tab-grading" class="tab-panel">
+    <div class="section"><div class="section-header"><div class="section-icon" style="background:var(--purple-light)"><i class="fas fa-star-half-alt" style="color:var(--purple)"></i></div><div><div class="section-title">House-Brackmann Grade</div></div><div style="margin-left:auto"><span class="badge badge-purple">I=Normal · VI=Total</span></div></div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px;"><thead><tr style="background:var(--gray-50)"><th style="padding:8px 12px;text-align:left;font-weight:500;color:var(--gray-600);border-bottom:1px solid var(--gray-100);">Region</th><th style="padding:8px 12px;text-align:center;font-weight:500;color:var(--gray-600);border-bottom:1px solid var(--gray-100);">Right</th><th style="padding:8px 12px;text-align:center;font-weight:500;color:var(--gray-600);border-bottom:1px solid var(--gray-100);">Left</th></tr></thead>
+      <tbody>${['Brow','Eye','Smile','Pucker','LipDep'].map(r=>`<tr style="border-bottom:1px solid var(--gray-100)"><td style="padding:8px 12px">${r.replace('LipDep','Lip Depression')}</td><td style="padding:8px 12px;text-align:center"><span class="badge badge-${hbColor(hb[r+'R'])}">${hb[r+'R']||'—'}</span></td><td style="padding:8px 12px;text-align:center"><span class="badge badge-teal">${hb[r+'L']||'—'}</span></td></tr>`).join('')}</tbody></table>
+      <div style="margin-top:10px;padding:10px;background:var(--gray-50);border-radius:var(--radius-sm);display:flex;gap:20px;font-size:12px;">
+        <div><span style="color:var(--gray-400)">Synkinesis:</span> <strong>${esc(p.synkinesis||'—')}</strong></div>
+        <div><span style="color:var(--gray-400)">Severity:</span> <strong>${esc(p.synkinesisSeverity||'—')}</strong></div>
+      </div>
+    </div>
+    <div class="section"><div class="section-header"><div class="section-icon" style="background:var(--teal-light)"><i class="fas fa-chart-line" style="color:var(--teal)"></i></div><div><div class="section-title">Sunnybrook Grade</div></div><div style="margin-left:auto"><span class="badge badge-teal">0–100</span></div></div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px;"><thead><tr style="background:var(--gray-50)"><th style="padding:8px 12px;text-align:left;font-weight:500;color:var(--gray-600);border-bottom:1px solid var(--gray-100);">Region</th><th style="padding:8px 12px;text-align:center;font-weight:500;color:var(--gray-600);border-bottom:1px solid var(--gray-100);">Right</th><th style="padding:8px 12px;text-align:center;font-weight:500;color:var(--gray-600);border-bottom:1px solid var(--gray-100);">Left</th></tr></thead>
+      <tbody>${['Brow','Eye','Smile','Pucker','LipDep'].map(r=>`<tr style="border-bottom:1px solid var(--gray-100)"><td style="padding:8px 12px">${r.replace('LipDep','Lip Depression')}</td><td style="padding:8px 12px;text-align:center"><span class="badge badge-blue">${sb[r+'R']||'—'}</span></td><td style="padding:8px 12px;text-align:center"><span class="badge badge-teal">${sb[r+'L']||'—'}</span></td></tr>`).join('')}</tbody></table>
+    </div>
+  </div>
+  <div id="tab-investigations" class="tab-panel">
+    <div class="section"><div class="section-header"><div class="section-icon" style="background:var(--amber-light)"><i class="fas fa-vials" style="color:var(--amber)"></i></div><div><div class="section-title">Investigations (${(p.investigations||[]).length} รายการ)</div></div></div>
+      ${(p.investigations||[]).length===0?'<div style="color:var(--gray-400);font-size:13px;">ยังไม่มีข้อมูล</div>':`<div class="timeline">${inv}</div>`}
+    </div>
+  </div>
+  <div id="tab-treatment" class="tab-panel">
+    <div class="section"><div class="section-header"><div class="section-icon" style="background:var(--purple-light)"><i class="fas fa-pills" style="color:var(--purple)"></i></div><div><div class="section-title">Rehabilitation & Treatment (${(p.treatments||[]).length} รายการ)</div></div></div>
+      ${(p.treatments||[]).length===0?'<div style="color:var(--gray-400);font-size:13px;">ยังไม่มีข้อมูล</div>':`<div class="timeline">${tx}</div>`}
+    </div>
+    <div class="section"><div class="section-header"><div class="section-icon" style="background:var(--teal-light)"><i class="fas fa-bullseye" style="color:var(--teal)"></i></div><div><div class="section-title">Patient Goals</div></div></div>
+      <div style="font-size:13px;line-height:1.8;">${esc(p.patientGoals||'—')}</div>
+    </div>
+    <div class="section"><div class="section-header"><div class="section-icon" style="background:var(--blue-light)"><i class="fas fa-user-md" style="color:var(--blue)"></i></div><div><div class="section-title">Record Info</div></div></div>
+      <div class="info-row">
+        <div class="info-item"><div class="info-key">Case ID</div><div class="info-val" style="font-family:monospace">${esc(p.caseId||p.id)}</div></div>
+        <div class="info-item"><div class="info-key">Clinician</div><div class="info-val">${esc(p.clinician||'—')}</div></div>
+        <div class="info-item"><div class="info-key">Email</div><div class="info-val">${esc(p.clinicianEmail||'—')}</div></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+window.switchTab=name=>{
+  const tabs=['overview','grading','investigations','treatment'];
+  document.querySelectorAll('.form-tab').forEach((t,i)=>t.classList.toggle('active',tabs[i]===name));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('active',p.id==='tab-'+name));
+};
+
+/* ── EDIT MODE ── */
+window.toggleEdit=()=>{
+  isEditing=true;
+  document.getElementById('editBtn').style.display='none';
+  document.getElementById('saveBtn').style.display='';
+  document.getElementById('cancelBtn').style.display='';
+  renderEditMode(currentPatient);
+};
+window.cancelEdit=()=>{
+  isEditing=false;
+  document.getElementById('editBtn').style.display='';
+  document.getElementById('saveBtn').style.display='none';
+  document.getElementById('cancelBtn').style.display='none';
+  renderViewMode(currentPatient);
+};
+
+function renderEditMode(p){
+  const hb=p.hb||{},sb=p.sb||{};
+  function hbRow(label,key){
+    return `<div class="hb-label">${label}</div>
+      <select name="hb${key}R">${['','I','II','III','IV','V','VI'].map(v=>`<option value="${v}"${v===(hb[key+'R']||'')?'selected':''}>${v||'—'}</option>`).join('')}</select>
+      <select name="hb${key}L">${['','I','II','III','IV','V','VI'].map(v=>`<option value="${v}"${v===(hb[key+'L']||'')?'selected':''}>${v||'—'}</option>`).join('')}</select>`;
+  }
+  document.getElementById('mainContent').innerHTML=`
+  <div class="form-tabs">
+    <button class="form-tab active" onclick="switchEditTab('patient')">ข้อมูลผู้ป่วย</button>
+    <button class="form-tab" onclick="switchEditTab('etiology')">Etiology</button>
+    <button class="form-tab" onclick="switchEditTab('grading')">Grading</button>
+    <button class="form-tab" onclick="switchEditTab('neuro')">Neuro & Ophth</button>
+    <button class="form-tab" onclick="switchEditTab('investigations')">Investigations</button>
+    <button class="form-tab" onclick="switchEditTab('treatment')">Treatment</button>
+    <button class="form-tab" onclick="switchEditTab('record')">Record</button>
+  </div>
+  <form id="editForm">
+  <div id="etab-patient" class="tab-panel active">
+    <div class="section"><div class="section-header"><div class="section-icon" style="background:var(--teal-light)"><i class="fas fa-user" style="color:var(--teal)"></i></div><div><div class="section-title">ข้อมูลผู้ป่วย</div></div></div>
+      <div class="grid-4">
+        <div class="field"><label>HN <span style="color:var(--coral)">*</span></label><input name="hn" value="${esc(p.hn)}"></div>
+        <div class="field"><label>ชื่อ</label><input name="firstName" value="${esc(p.firstName)}"></div>
+        <div class="field"><label>นามสกุล</label><input name="lastName" value="${esc(p.lastName)}"></div>
+        <div class="field"><label>Sex</label><select name="sex">${opts(['','Male','Female','Other'],p.sex)}</select></div>
+        <div class="field col-span-2"><label>วันเกิด</label><input type="date" name="dob" value="${esc(p.dob)}" oninput="updateAgeDisplay()"></div>
+        <div class="field"><label>Visit Date</label><input type="date" name="visitDate" value="${esc(p.visitDate)}" oninput="updateAgeDisplay()"></div>
+        <div class="field"><label>อายุ (อัตโนมัติ)</label><input id="ageDisplay" value="${calcAge(p.dob,p.visitDate)} ปี" readonly></div>
+        <div class="field col-span-2"><label>Occupation</label><input name="occupation" value="${esc(p.occupation)}"></div>
+        <div class="field col-span-2"><label>Underlying Disease</label><input name="underlying" value="${esc(p.underlying)}"></div>
+        <div class="field col-span-2"><label>Smoking</label><select name="smoking">${opts(['','Non-smoker','Current smoker','Ex-smoker'],p.smoking)}</select></div>
+        <div class="field col-span-2"><label>Previous Facial Surgery</label><input name="prevSurgery" value="${esc(p.prevSurgery)}"></div>
+        <div class="field col-span-2"><label>Previous Botox/Filler</label><input name="prevBotox" value="${esc(p.prevBotox)}"></div>
+        <div class="field col-span-2"><label>Previous FP Treatment</label><input name="prevTx" value="${esc(p.prevTx)}"></div>
+      </div>
+    </div>
+  </div>
+  <div id="etab-etiology" class="tab-panel">
+    <div class="section"><div class="section-header"><div class="section-icon" style="background:var(--amber-light)"><i class="fas fa-bolt" style="color:var(--amber)"></i></div><div><div class="section-title">Etiology & Onset</div></div></div>
+      <div class="grid-3">
+        <div class="field"><label>Level of Injury</label><select name="levelInjury">${opts(['','Intracranial','Intratemporal','Extratemporal'],p.levelInjury)}</select></div>
+        <div class="field col-span-2"><label>Etiology</label><select name="etiology">${opts(["","Stroke","Skull fracture","Direct trauma","Brain surgery","Bell's palsy","Parotid tumor/surgery","Ear infection","Other infections","Others"],p.etiology)}</select></div>
+        <div class="field"><label>Date of Onset</label><input type="date" name="dateOnset" value="${esc(p.dateOnset)}"></div>
+        <div class="field"><label>Duration</label><select name="duration">${opts(['','Acute <72 hr','< 12 months','12–24 months','> 24 months'],p.duration)}</select></div>
+        <div class="field"><label>Mode of Onset</label><select name="modeOnset">${opts(['','Sudden','Gradual'],p.modeOnset)}</select></div>
+        <div class="field"><label>Course</label><select name="course">${opts(['','Progressive','Stable','Improving'],p.course)}</select></div>
+        <div class="field"><label>Recurrent</label><select name="recurrent">${opts(['','Yes','No'],p.recurrent)}</select></div>
+        <div class="field"><label>Side</label><select name="side">${opts(['','Right','Left','Bilateral'],p.side)}</select></div>
+        <div class="field col-span-3"><label>Signs & Symptoms</label><textarea name="symptoms">${esc(p.symptoms)}</textarea></div>
+      </div>
+    </div>
+  </div>
+  <div id="etab-grading" class="tab-panel">
+    <div class="section"><div class="section-header"><div class="section-icon" style="background:var(--purple-light)"><i class="fas fa-star-half-alt" style="color:var(--purple)"></i></div><div><div class="section-title">House-Brackmann Grade</div><div class="section-sub">I=Normal · VI=Total</div></div></div>
+      <div class="hb-grid"><div></div><div class="hb-head">Right</div><div class="hb-head">Left</div>
+        ${hbRow('Brow','Brow')}${hbRow('Eye','Eye')}${hbRow('Smile','Smile')}${hbRow('Pucker','Pucker')}${hbRow('Lip Depression','LipDep')}
+      </div>
+      <div class="grid-2" style="margin-top:14px;">
+        <div class="field"><label>Synkinesis</label><select name="synkinesis">${opts(['','Yes','No'],p.synkinesis)}</select></div>
+        <div class="field"><label>Severity</label><select name="synkinesisSeverity">${opts(['','Mild','Moderate','Severe'],p.synkinesisSeverity)}</select></div>
+      </div>
+    </div>
+    <div class="section"><div class="section-header"><div class="section-icon" style="background:var(--teal-light)"><i class="fas fa-chart-line" style="color:var(--teal)"></i></div><div><div class="section-title">Sunnybrook Grade</div><div class="section-sub">0–100</div></div></div>
+      <div class="hb-grid"><div></div><div class="hb-head">Right</div><div class="hb-head">Left</div>
+        ${['Brow','Eye','Smile','Pucker','LipDep'].map(k=>`<div class="hb-label">${k.replace('LipDep','Lip Dep')}</div><input type="number" min="0" max="100" name="sb${k}R" value="${sb[k+'R']||''}" style="padding:5px 7px;border:1px solid var(--gray-200);border-radius:var(--radius-sm);font-family:inherit;font-size:12px;width:100%;"><input type="number" min="0" max="100" name="sb${k}L" value="${sb[k+'L']||''}" style="padding:5px 7px;border:1px solid var(--gray-200);border-radius:var(--radius-sm);font-family:inherit;font-size:12px;width:100%;">`).join('')}
+      </div>
+    </div>
+  </div>
+  <div id="etab-neuro" class="tab-panel">
+    <div class="section"><div class="section-header"><div class="section-icon" style="background:var(--blue-light)"><i class="fas fa-brain" style="color:var(--blue)"></i></div><div><div class="section-title">Cranial Nerve & Ophthalmology</div></div></div>
+      <div class="grid-4">
+        <div class="field"><label>Donor Nerve</label><input name="donorNerve" value="${esc(p.donorNerve)}"></div>
+        <div class="field"><label>CN V</label><select name="cnV">${opts(['','Normal','Abnormal','Not tested'],p.cnV)}</select></div>
+        <div class="field"><label>CN XI</label><select name="cnXI">${opts(['','Normal','Abnormal','Not tested'],p.cnXI)}</select></div>
+        <div class="field"><label>CN XII</label><select name="cnXII">${opts(['','Normal','Abnormal','Not tested'],p.cnXII)}</select></div>
+        <div class="field col-span-2"><label>Ophtho Findings</label><input name="ophthoFindings" value="${esc(p.ophthoFindings)}"></div>
+        <div class="field"><label>Lagophthalmos (mm)</label><input type="number" name="lagophthalmos" value="${p.lagophthalmos||''}"></div>
+        <div class="field"><label>Bell's Phenomenon</label><select name="bellsPhenomenon">${opts(['','Present','Absent'],p.bellsPhenomenon)}</select></div>
+        <div class="field"><label>Visual Acuity</label><input name="va" value="${esc(p.va)}"></div>
+      </div>
+    </div>
+  </div>
+  <div id="etab-investigations" class="tab-panel">
+    <div class="section"><div class="section-header"><div class="section-icon" style="background:var(--amber-light)"><i class="fas fa-vials" style="color:var(--amber)"></i></div><div><div class="section-title">Investigations</div><div class="section-sub">เพิ่มได้หลายครั้ง</div></div></div>
+      <div id="inv-list"></div>
+      <button type="button" class="add-entry-btn" onclick="addInvestigation()"><i class="fas fa-plus"></i> เพิ่ม Investigation</button>
+    </div>
+  </div>
+  <div id="etab-treatment" class="tab-panel">
+    <div class="section"><div class="section-header"><div class="section-icon" style="background:var(--purple-light)"><i class="fas fa-pills" style="color:var(--purple)"></i></div><div><div class="section-title">Rehabilitation & Treatment</div><div class="section-sub">เพิ่มได้หลายครั้ง</div></div></div>
+      <div id="tx-list"></div>
+      <button type="button" class="add-entry-btn" onclick="addTreatment()"><i class="fas fa-plus"></i> เพิ่ม Treatment</button>
+    </div>
+    <div class="section"><div class="section-header"><div class="section-icon" style="background:var(--teal-light)"><i class="fas fa-bullseye" style="color:var(--teal)"></i></div><div><div class="section-title">Patient Goals</div></div></div>
+      <div class="field"><textarea name="patientGoals" rows="3">${esc(p.patientGoals)}</textarea></div>
+    </div>
+  </div>
+  <div id="etab-record" class="tab-panel">
+    <div class="section"><div class="section-header"><div class="section-icon" style="background:var(--blue-light)"><i class="fas fa-user-md" style="color:var(--blue)"></i></div><div><div class="section-title">Record Info</div></div></div>
+      <div class="grid-2">
+        <div class="field"><label>Case ID</label><input value="${esc(p.caseId||p.id)}" readonly></div>
+        <div class="field"><label>Clinician Name</label><input name="clinician" value="${esc(p.clinician)}"></div>
+        <div class="field"><label>Clinician Email</label><input type="email" name="clinicianEmail" value="${esc(p.clinicianEmail)}"></div>
+      </div>
+    </div>
+  </div>
+  </form>`;
+  renderInvList(p.investigations||[]);
+  renderTxList(p.treatments||[]);
+}
+
+window.switchEditTab=name=>{
+  const names=['patient','etiology','grading','neuro','investigations','treatment','record'];
+  document.querySelectorAll('.form-tab').forEach((t,i)=>t.classList.toggle('active',names[i]===name));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('active',p.id==='etab-'+name));
+};
+window.updateAgeDisplay=()=>{
+  const d=document.querySelector('[name="dob"]'),v=document.querySelector('[name="visitDate"]'),a=document.getElementById('ageDisplay');
+  if(!d||!v||!a) return;
+  const age=calcAge(d.value,v.value);
+  a.value=age==='—'?'—':age+' ปี';
+};
+
+/* ── REPEATED ── */
+window.renderInvList=list=>{
+  tempInv=JSON.parse(JSON.stringify(list));
+  const c=document.getElementById('inv-list');if(!c)return;
+  c.innerHTML=tempInv.map((item,i)=>`<div class="repeated-block">
+    <div class="repeated-header open" onclick="toggleRepeated(this)">
+      <span class="entry-num">#${i+1}</span>
+      <span class="entry-title">${esc(item.type||'Investigation '+(i+1))} · ${esc(item.date||'ไม่ระบุวันที่')}</span>
+      <i class="fas fa-chevron-down chevron"></i>
+    </div>
+    <div class="repeated-body">
+      <div class="grid-3" style="margin-bottom:10px;">
+        <div class="field"><label>วันที่</label><input type="date" value="${esc(item.date)}" oninput="updateInv(${i},'date',this.value)"></div>
+        <div class="field col-span-2"><label>ประเภท</label><select oninput="updateInv(${i},'type',this.value)">${opts(['','EMG/NCS','MRI Brain','CT','Audiogram','Blood test','Other'],item.type)}</select></div>
+        <div class="field col-span-3"><label>ผล / Result</label><textarea oninput="updateInv(${i},'result',this.value)">${esc(item.result)}</textarea></div>
+      </div>
+      <button type="button" class="remove-btn" onclick="removeInv(${i})"><i class="fas fa-trash"></i> ลบ</button>
+    </div>
+  </div>`).join('');
+};
+window.renderTxList=list=>{
+  tempTx=JSON.parse(JSON.stringify(list));
+  const c=document.getElementById('tx-list');if(!c)return;
+  c.innerHTML=tempTx.map((item,i)=>`<div class="repeated-block">
+    <div class="repeated-header open" onclick="toggleRepeated(this)">
+      <span class="entry-num">#${i+1}</span>
+      <span class="entry-title">${esc(item.type||'Treatment '+(i+1))} · ${esc(item.date||'ไม่ระบุวันที่')}</span>
+      <i class="fas fa-chevron-down chevron"></i>
+    </div>
+    <div class="repeated-body">
+      <div class="grid-3" style="margin-bottom:10px;">
+        <div class="field"><label>วันที่</label><input type="date" value="${esc(item.date)}" oninput="updateTx(${i},'date',this.value)"></div>
+        <div class="field col-span-2"><label>ประเภท</label><select oninput="updateTx(${i},'type',this.value)">${opts(['','Facial physiotherapy','Neuromuscular retraining','Botox','Eye care','Surgical','Splinting','Other'],item.type)}</select></div>
+        <div class="field col-span-3"><label>Notes</label><textarea oninput="updateTx(${i},'notes',this.value)">${esc(item.notes)}</textarea></div>
+      </div>
+      <button type="button" class="remove-btn" onclick="removeTx(${i})"><i class="fas fa-trash"></i> ลบ</button>
+    </div>
+  </div>`).join('');
+};
+window.toggleRepeated=el=>{el.classList.toggle('open');el.nextElementSibling.classList.toggle('collapsed');};
+window.addInvestigation=()=>{tempInv.push({date:'',type:'',result:''});renderInvList(tempInv);};
+window.removeInv=i=>{tempInv.splice(i,1);renderInvList(tempInv);};
+window.updateInv=(i,k,v)=>{tempInv[i][k]=v;};
+window.addTreatment=()=>{tempTx.push({date:'',type:'',notes:''});renderTxList(tempTx);};
+window.removeTx=i=>{tempTx.splice(i,1);renderTxList(tempTx);};
+window.updateTx=(i,k,v)=>{tempTx[i][k]=v;};
+
+/* ── SAVE ── */
+window.savePatient=async()=>{
+  const form=document.getElementById('editForm');if(!form)return;
+  const data=Object.fromEntries(new FormData(form).entries());
+  const hb={},sb={};
+  ['Brow','Eye','Smile','Pucker','LipDep'].forEach(k=>{
+    hb[k+'R']=data['hb'+k+'R']||'';hb[k+'L']=data['hb'+k+'L']||'';
+    sb[k+'R']=data['sb'+k+'R']||'';sb[k+'L']=data['sb'+k+'L']||'';
+  });
+  const payload={
+    hn:data.hn||currentPatient.hn,firstName:data.firstName||'',lastName:data.lastName||'',
+    dob:data.dob||'',visitDate:data.visitDate||'',sex:data.sex||'',
+    occupation:data.occupation||'',underlying:data.underlying||'',smoking:data.smoking||'',
+    prevSurgery:data.prevSurgery||'',prevBotox:data.prevBotox||'',prevTx:data.prevTx||'',
+    levelInjury:data.levelInjury||'',etiology:data.etiology||'',dateOnset:data.dateOnset||'',
+    duration:data.duration||'',modeOnset:data.modeOnset||'',course:data.course||'',
+    recurrent:data.recurrent||'',side:data.side||'',symptoms:data.symptoms||'',
+    hb,sb,synkinesis:data.synkinesis||'',synkinesisSeverity:data.synkinesisSeverity||'',
+    donorNerve:data.donorNerve||'',cnV:data.cnV||'',cnXI:data.cnXI||'',cnXII:data.cnXII||'',
+    ophthoFindings:data.ophthoFindings||'',lagophthalmos:data.lagophthalmos||'',
+    bellsPhenomenon:data.bellsPhenomenon||'',va:data.va||'',
+    investigations:tempInv,treatments:tempTx,patientGoals:data.patientGoals||'',
+    clinician:data.clinician||'',clinicianEmail:data.clinicianEmail||'',
+    updatedAt:serverTimestamp(),updatedBy:currentUser.uid
+  };
+  const btn=document.getElementById('saveBtn');
+  btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> กำลังบันทึก...';
+  try{
+    await updateDoc(doc(db,'patients',currentPatient.id),payload);
+    Object.assign(currentPatient,payload);
+    isEditing=false;
+    document.getElementById('editBtn').style.display='';
+    document.getElementById('saveBtn').style.display='none';
+    document.getElementById('cancelBtn').style.display='none';
+    renderViewMode(currentPatient);
+    showToast('บันทึกข้อมูลเรียบร้อย');
+  }catch(e){showToast('เกิดข้อผิดพลาด: '+e.message);}
+  btn.disabled=false;btn.innerHTML='<i class="fas fa-save"></i> บันทึก';
+};
+
+/* ── NEW PATIENT ── */
+window.newPatient=async()=>{
+  const now=new Date();
+  const caseId='CMU-FP-'+now.getFullYear()+String(now.getMonth()+1).padStart(2,'0')+String(now.getDate()).padStart(2,'0')+'-'+Math.floor(Math.random()*9000+1000);
+  const p={
+    caseId,hn:'',firstName:'',lastName:'',dob:'',
+    visitDate:now.toISOString().split('T')[0],
+    sex:'',occupation:'',underlying:'',smoking:'',
+    prevSurgery:'',prevBotox:'',prevTx:'',
+    levelInjury:'',etiology:'',dateOnset:'',duration:'',
+    modeOnset:'',course:'',recurrent:'',side:'',symptoms:'',
+    hb:{},sb:{},synkinesis:'',synkinesisSeverity:'',
+    donorNerve:'',cnV:'',cnXI:'',cnXII:'',
+    ophthoFindings:'',lagophthalmos:'',bellsPhenomenon:'',va:'',
+    investigations:[],treatments:[],patientGoals:'',
+    clinician:`${currentUserData.firstName} ${currentUserData.lastName}`,
+    clinicianEmail:currentUser.email,
+    createdAt:serverTimestamp(),createdBy:currentUser.uid
+  };
+  try{
+    const ref=await addDoc(collection(db,'patients'),p);
+    currentPatient={id:ref.id,...p};
+    isEditing=true;
+    document.getElementById('welcomeScreen').style.display='none';
+    document.getElementById('adminPanelView').style.display='none';
+    document.getElementById('patientView').style.display='flex';
+    document.getElementById('editBtn').style.display='none';
+    document.getElementById('saveBtn').style.display='';
+    document.getElementById('cancelBtn').style.display='';
+    renderEditMode(currentPatient);
+    renderSidebar();
+    showToast('เพิ่มผู้ป่วยใหม่ · '+caseId);
+  }catch(e){showToast('เกิดข้อผิดพลาด: '+e.message);}
+};
+
+/* ── ADMIN PANEL ── */
+window.showAdminPanel=async()=>{
+  document.getElementById('patientView').style.display='none';
+  document.getElementById('welcomeScreen').style.display='none';
+  document.getElementById('adminPanelView').style.display='block';
+  await loadAdminPanel();
+};
+window.hideAdminPanel=()=>{
+  document.getElementById('adminPanelView').style.display='none';
+  document.getElementById('welcomeScreen').style.display='flex';
+};
+async function loadAdminPanel(){
+  const snap=await getDocs(collection(db,'users'));
+  const users=snap.docs.map(d=>({id:d.id,...d.data()}));
+  const pending=users.filter(u=>!u.approved);
+  const approved=users.filter(u=>u.approved);
+  document.getElementById('pendingCount').textContent=pending.length+' รายการ';
+  document.getElementById('pendingList').innerHTML=pending.length===0
+    ?'<div style="color:var(--gray-400);font-size:13px;">ไม่มีรายการรอ</div>'
+    :`<table class="users-table"><thead><tr><th>ชื่อ-นามสกุล</th><th>Email</th><th>วันที่สมัคร</th><th>Action</th></tr></thead><tbody>
+    ${pending.map(u=>`<tr>
+      <td>${esc(u.firstName+' '+u.lastName)}</td>
+      <td style="font-family:monospace;font-size:12px;">${esc(u.email)}</td>
+      <td style="font-size:12px;color:var(--gray-400);">${u.createdAt?.toDate?u.createdAt.toDate().toLocaleDateString('th-TH'):'-'}</td>
+      <td><div style="display:flex;gap:6px;align-items:center;">
+        <select class="role-select" id="role_${u.id}"><option value="clinician">Clinician</option><option value="viewer">Viewer</option><option value="admin">Admin</option></select>
+        <button class="btn-approve" onclick="approveUser('${u.id}')">Approve</button>
+        <button class="btn-revoke" onclick="rejectUser('${u.id}')">ปฏิเสธ</button>
+      </div></td>
+    </tr>`).join('')}</tbody></table>`;
+  document.getElementById('allUsersList').innerHTML=approved.length===0
+    ?'<div style="color:var(--gray-400);font-size:13px;">ไม่มีผู้ใช้งาน</div>'
+    :`<table class="users-table"><thead><tr><th>ชื่อ-นามสกุล</th><th>Email</th><th>Role</th><th>Action</th></tr></thead><tbody>
+    ${approved.map(u=>`<tr>
+      <td>${esc(u.firstName+' '+u.lastName)}</td>
+      <td style="font-family:monospace;font-size:12px;">${esc(u.email)}</td>
+      <td><span class="badge badge-${u.role==='admin'?'purple':u.role==='viewer'?'blue':'teal'}">${u.role}</span></td>
+      <td><div style="display:flex;gap:6px;align-items:center;">
+        <select class="role-select" id="chgrole_${u.id}" onchange="changeRole('${u.id}',this.value)">
+          ${['clinician','viewer','admin'].map(r=>`<option value="${r}"${r===u.role?' selected':''}>${r}</option>`).join('')}
+        </select>
+        ${u.id!==currentUser.uid?`<button class="btn-revoke" onclick="revokeUser('${u.id}')">Revoke</button>`:'<span style="font-size:11px;color:var(--gray-400);">(คุณ)</span>'}
+      </div></td>
+    </tr>`).join('')}</tbody></table>`;
+}
+window.approveUser=async id=>{
+  const role=document.getElementById('role_'+id)?.value||'clinician';
+  await updateDoc(doc(db,'users',id),{approved:true,role});
+  showToast('Approved เรียบร้อย');await loadAdminPanel();
+};
+window.rejectUser=async id=>{
+  if(!confirm('ต้องการปฏิเสธผู้ใช้นี้?'))return;
+  await deleteDoc(doc(db,'users',id));
+  showToast('ลบรายการแล้ว');await loadAdminPanel();
+};
+window.revokeUser=async id=>{
+  if(!confirm('ต้องการ Revoke การเข้าถึงของผู้ใช้นี้?'))return;
+  await updateDoc(doc(db,'users',id),{approved:false});
+  showToast('Revoked เรียบร้อย');await loadAdminPanel();
+};
+window.changeRole=async(id,role)=>{
+  await updateDoc(doc(db,'users',id),{role});
+  showToast('เปลี่ยน Role เรียบร้อย');
+};
+
+/* ── EXPORT HELPERS ── */
+function buildExportRows(patients) {
+  // หา max จำนวน investigations และ treatments
+  let maxInv = 0, maxTx = 0;
+  patients.forEach(p => {
+    maxInv = Math.max(maxInv, (p.investigations||[]).length);
+    maxTx  = Math.max(maxTx,  (p.treatments||[]).length);
+  });
+
+  // สร้าง headers
+  const headers = [
+    'Case_ID','HN','ชื่อ','นามสกุล','วันเกิด','Visit_Date','อายุ_ณ_Visit','Sex',
+    'Occupation','Underlying_Disease','Smoking',
+    'Prev_Facial_Surgery','Prev_Botox_Filler','Prev_FP_Treatment',
+    'Level_of_Injury','Etiology','Date_of_Onset','Duration',
+    'Mode_of_Onset','Course','Recurrent','Side','Symptoms',
+    'HB_Brow_R','HB_Brow_L','HB_Eye_R','HB_Eye_L',
+    'HB_Smile_R','HB_Smile_L','HB_Pucker_R','HB_Pucker_L',
+    'HB_LipDep_R','HB_LipDep_L',
+    'SB_Brow_R','SB_Brow_L','SB_Eye_R','SB_Eye_L',
+    'SB_Smile_R','SB_Smile_L','SB_Pucker_R','SB_Pucker_L',
+    'SB_LipDep_R','SB_LipDep_L',
+    'Synkinesis','Synkinesis_Severity',
+    'Donor_Nerve','CN_V','CN_XI','CN_XII',
+    'Ophtho_Findings','Lagophthalmos_mm','Bells_Phenomenon','Visual_Acuity',
+    'Patient_Goals','Clinician','Clinician_Email',
+  ];
+  for(let i=1;i<=maxInv;i++) headers.push(`Inv${i}_Date`,`Inv${i}_Type`,`Inv${i}_Result`);
+  for(let i=1;i<=maxTx;i++)  headers.push(`Tx${i}_Date`,`Tx${i}_Type`,`Tx${i}_Notes`);
+
+  // สร้าง rows
+  const rows = patients.map(p => {
+    const hb=p.hb||{}, sb=p.sb||{};
+    const age=calcAge(p.dob,p.visitDate);
+    const row = [
+      p.caseId||p.id, p.hn||'', p.firstName||'', p.lastName||'',
+      p.dob||'', p.visitDate||'', age==='—'?'':age, p.sex||'',
+      p.occupation||'', p.underlying||'', p.smoking||'',
+      p.prevSurgery||'', p.prevBotox||'', p.prevTx||'',
+      p.levelInjury||'', p.etiology||'', p.dateOnset||'', p.duration||'',
+      p.modeOnset||'', p.course||'', p.recurrent||'', p.side||'', p.symptoms||'',
+      hb.BrowR||'', hb.BrowL||'', hb.EyeR||'', hb.EyeL||'',
+      hb.SmileR||'', hb.SmileL||'', hb.PuckerR||'', hb.PuckerL||'',
+      hb.LipDepR||'', hb.LipDepL||'',
+      sb.BrowR||'', sb.BrowL||'', sb.EyeR||'', sb.EyeL||'',
+      sb.SmileR||'', sb.SmileL||'', sb.PuckerR||'', sb.PuckerL||'',
+      sb.LipDepR||'', sb.LipDepL||'',
+      p.synkinesis||'', p.synkinesisSeverity||'',
+      p.donorNerve||'', p.cnV||'', p.cnXI||'', p.cnXII||'',
+      p.ophthoFindings||'', p.lagophthalmos||'', p.bellsPhenomenon||'', p.va||'',
+      p.patientGoals||'', p.clinician||'', p.clinicianEmail||'',
+    ];
+    const inv = p.investigations||[];
+    for(let i=0;i<maxInv;i++) {
+      row.push(inv[i]?.date||'', inv[i]?.type||'', inv[i]?.result||'');
+    }
+    const tx = p.treatments||[];
+    for(let i=0;i<maxTx;i++) {
+      row.push(tx[i]?.date||'', tx[i]?.type||'', tx[i]?.notes||'');
+    }
+    return row;
+  });
+
+  return { headers, rows };
+}
+
+/* ── EXPORT CSV ── */
+window.exportCSV = () => {
+  if(allPatients.length===0){showToast('ไม่มีข้อมูลผู้ป่วย');return;}
+  const {headers,rows} = buildExportRows(allPatients);
+  const escape = v => {
+    const s = String(v);
+    return s.includes(',')||s.includes('"')||s.includes('\n') ? `"${s.replace(/"/g,'""')}"` : s;
+  };
+  const csv = [headers, ...rows].map(r=>r.map(escape).join(',')).join('\n');
+  const bom = '\uFEFF'; // UTF-8 BOM สำหรับ Excel ภาษาไทย
+  const blob = new Blob([bom+csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `CMU-FP-Registry_${new Date().toISOString().split('T')[0]}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Export CSV สำเร็จ · '+allPatients.length+' ราย');
+};
+
+/* ── EXPORT EXCEL ── */
+window.exportExcel = async () => {
+  if(allPatients.length===0){showToast('ไม่มีข้อมูลผู้ป่วย');return;}
+  showToast('กำลัง Export Excel...');
+
+  // โหลด SheetJS
+  if(!window.XLSX){
+    await new Promise((res,rej)=>{
+      const s=document.createElement('script');
+      s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+      s.onload=res; s.onerror=rej;
+      document.head.appendChild(s);
+    });
+  }
+
+  const {headers,rows} = buildExportRows(allPatients);
+  const wsData = [headers, ...rows];
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+  // กำหนดความกว้าง column อัตโนมัติ
+  const colWidths = headers.map((h,i)=>{
+    const maxLen = Math.max(h.length, ...rows.map(r=>String(r[i]||'').length));
+    return {wch: Math.min(maxLen+2, 40)};
+  });
+  ws['!cols'] = colWidths;
+
+  // Style header row (ต้องใช้ xlsx-style แต่ basic version ทำได้แค่นี้)
+  XLSX.utils.book_append_sheet(wb, ws, 'Patients');
+
+  // sheet สรุป
+  const summary = [
+    ['CMU Facial Palsy Registry — Export'],
+    ['วันที่ Export:', new Date().toLocaleString('th-TH')],
+    ['จำนวนผู้ป่วยทั้งหมด:', allPatients.length],
+    [],
+    ['Etiology','จำนวน'],
+  ];
+  const etiCount = {};
+  allPatients.forEach(p=>{const e=p.etiology||'ไม่ระบุ';etiCount[e]=(etiCount[e]||0)+1;});
+  Object.entries(etiCount).sort((a,b)=>b[1]-a[1]).forEach(([k,v])=>summary.push([k,v]));
+  const wsSummary = XLSX.utils.aoa_to_sheet(summary);
+  wsSummary['!cols'] = [{wch:30},{wch:15}];
+  XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
+
+  XLSX.writeFile(wb, `CMU-FP-Registry_${new Date().toISOString().split('T')[0]}.xlsx`);
+  showToast('Export Excel สำเร็จ · '+allPatients.length+' ราย');
+};
+
+</script>
+</body>
+</html>
