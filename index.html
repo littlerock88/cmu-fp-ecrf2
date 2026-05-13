@@ -399,31 +399,18 @@ window.showScreen = name => {
 };
 
 /* ── AUTH STATE ── */
-
-// Timeout บังคับซ่อน loading ถ้านานเกิน 10 วินาที
-const loadingTimeout = setTimeout(() => {
-  hideLoading();
-  showScreen('login');
-}, 10000);
-
 onAuthStateChanged(auth, async user => {
-  clearTimeout(loadingTimeout);
   hideLoading();
   if(!user){showScreen('login');return;}
   currentUser=user;
-  try{
-    const snap=await getDoc(doc(db,'users',user.uid));
-    if(!snap.exists()){await signOut(auth);showScreen('login');return;}
-    currentUserData=snap.data();
-    if(!currentUserData.approved){
-      document.getElementById('pendingName').textContent=`สวัสดี ${currentUserData.firstName} ${currentUserData.lastName}`;
-      showScreen('pending');return;
-    }
-    initApp();
-  }catch(e){
-    console.error('Auth error:',e);
-    showScreen('login');
+  const snap=await getDoc(doc(db,'users',user.uid));
+  if(!snap.exists()){await signOut(auth);showScreen('login');return;}
+  currentUserData=snap.data();
+  if(!currentUserData.approved){
+    document.getElementById('pendingName').textContent=`สวัสดี ${currentUserData.firstName} ${currentUserData.lastName}`;
+    showScreen('pending');return;
   }
+  initApp();
 });
 
 /* ── LOGIN ── */
