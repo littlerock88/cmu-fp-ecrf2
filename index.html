@@ -307,6 +307,7 @@ body{font-family:'IBM Plex Sans Thai',sans-serif;background:var(--gray-50);color
           <button class="btn" id="editBtn" onclick="toggleEdit()"><i class="fas fa-pen"></i> แก้ไข</button>
           <button class="btn btn-primary" id="saveBtn" onclick="savePatient()" style="display:none;"><i class="fas fa-save"></i> บันทึก</button>
           <button class="btn" id="cancelBtn" onclick="cancelEdit()" style="display:none;"><i class="fas fa-times"></i> ยกเลิก</button>
+          <button class="btn" id="deleteBtn" onclick="deletePatient()" style="display:none;color:var(--red);border-color:var(--red-light);"><i class="fas fa-trash"></i> ลบ</button>
         </div>
       </div>
       <div class="content" id="mainContent" style="padding-top:18px;"></div>
@@ -505,6 +506,7 @@ window.loadPatient=id=>{
   document.getElementById('editBtn').style.display=currentUserData.role!=='viewer'?'':'none';
   document.getElementById('saveBtn').style.display='none';
   document.getElementById('cancelBtn').style.display='none';
+  document.getElementById('deleteBtn').style.display=currentUserData.role==='admin'?'':'none';
   renderViewMode(currentPatient);
   renderSidebar(document.getElementById('searchInput').value.trim());
 };
@@ -1068,9 +1070,61 @@ window.exportExcel = async () => {
   wsSummary['!cols'] = [{wch:30},{wch:15}];
   XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
 
-  XLSX.writeFile(wb, `CMU-FP-Registry_${new Date().toISOString().split('T')[0]}.xlsx`);
-  showToast('Export Excel สำเร็จ · '+allPatients.length+' ราย');
+/* ── DELETE PATIENT ── */
+window.deletePatient = async () => {
+  if(!currentPatient) return;
+  const name = fullName(currentPatient);
+  const hn = currentPatient.hn || currentPatient.id;
+
+  // แสดง custom confirm dialog
+  const confirmed = await showConfirmDialog(
+    'ยืนยันการลบข้อมูล',
+    `คุณต้องการลบข้อมูลผู้ป่วย<br><strong>${name}</strong> (HN: ${hn})<br><span style="color:var(--red);">การลบไม่สามารถย้อนกลับได้</span>`
+  );
+  if(!confirmed) return;
+
+  const btn = document.getElementById('deleteBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังลบ...';
+  try {
+    await deleteDoc(doc(db,'patients',currentPatient.id));
+    currentPatient = null;
+    document.getElementById('patientView').style.display = 'none';
+    document.getElementById('welcomeScreen').style.display = 'flex';
+    showToast('ลบข้อมูลเรียบร้อย');
+  } catch(e) {
+    showToast('เกิดข้อผิดพลาด: '+e.message);
+  }
+  btn.disabled = false;
+  btn.innerHTML = '<i class="fas fa-trash"></i> ลบ';
 };
+
+function showConfirmDialog(title, message) {
+  return new Promise(resolve => {
+    // สร้าง overlay
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9998;display:flex;align-items:center;justify-content:center;';
+    const dialog = document.createElement('div');
+    dialog.style.cssText = 'background:white;border-radius:10px;padding:28px 28px 22px;max-width:380px;width:90%;box-shadow:0 8px 24px rgba(0,0,0,0.15);';
+    dialog.innerHTML = `
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+        <div style="width:36px;height:36px;border-radius:50%;background:var(--red-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <i class="fas fa-exclamation-triangle" style="color:var(--red);font-size:16px;"></i>
+        </div>
+        <div style="font-size:15px;font-weight:600;color:var(--gray-800);">${title}</div>
+      </div>
+      <div style="font-size:13px;color:var(--gray-600);line-height:1.7;margin-bottom:22px;padding-left:48px;">${message}</div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;">
+        <button id="confirmCancel" style="padding:8px 18px;border:1px solid var(--gray-200);border-radius:6px;background:none;font-family:inherit;font-size:13px;cursor:pointer;">ยกเลิก</button>
+        <button id="confirmOk" style="padding:8px 18px;border:none;border-radius:6px;background:var(--red);color:white;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;"><i class="fas fa-trash"></i> ยืนยันลบ</button>
+      </div>`;
+    overlay.appendChild(dialog);
+    document.body.appendChild(overlay);
+    document.getElementById('confirmCancel').onclick = () => { document.body.removeChild(overlay); resolve(false); };
+    document.getElementById('confirmOk').onclick   = () => { document.body.removeChild(overlay); resolve(true);  };
+    overlay.onclick = e => { if(e.target===overlay){ document.body.removeChild(overlay); resolve(false); } };
+  });
+}
 
 </script>
 </body>
